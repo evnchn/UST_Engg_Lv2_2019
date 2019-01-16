@@ -22,7 +22,8 @@ cornerSA = [0, 0]
 cornerSET = False
 maxWH = 0
 img = cv2.imread(args["img"],cv2.IMREAD_GRAYSCALE)
-circleH = circleW = A = B = C = D = 0
+circleH = circleW = 1
+A = B = C = D = 0
 
 detimg = np.copy(img)
 if args["detection"]:
@@ -77,13 +78,14 @@ if args["detection"]:
 			cornerSD = i
 		else:
 			cornerSA = i
+	properw = int(width*circleH/circleW)
 	src_pts = np.array([[cornerWA[0] + cornerWA[2], cornerWA[1]
 					+ cornerWA[3]], cornerWD[:2], cornerSD[:2],
 					cornerSA[:2]], dtype=np.float32)
-	dst_pts = np.array([[0, 0], [int(width*circleH/circleW) - 1, 0], [int(width*circleH/circleW) - 1, height - 1],
+	dst_pts = np.array([[0, 0], [properw - 1, 0], [properw - 1, height - 1],
 					[0, height - 1]], dtype=np.float32)
 	img = cv2.warpPerspective(detimg, cv2.getPerspectiveTransform(src_pts,
-							dst_pts), (int(width*circleH/circleW), height))
+							dst_pts), (properw, height))
 blur = cv2.GaussianBlur(img, (15, 15), 0)
 (ret3, threshold) = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY
 								  + cv2.THRESH_OTSU)
@@ -108,6 +110,16 @@ for cnt in contours:
 			0,
 			)
 		A += 1
+	elif len(approx) == 2:
+		cv2.putText(
+			img,
+			'C',
+			(x, y),
+			font,
+			1,
+			0,
+			)
+		C += 1
 	elif len(approx) == 4:
 		(_, _, w, h) = cv2.boundingRect(approx)
 		ar = w / float(h)
