@@ -24,9 +24,9 @@ def recog(img,boolean):
 	detimg = np.copy(img)
 	if boolean:
 		
-	
+		#img = cv2.equalizeHist(img)
 		blur = cv2.GaussianBlur(img, (15,15), 0)
-		(ret3, threshold) = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY
+		(ret3, threshold) = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY
 										+ cv2.THRESH_OTSU)
 		contours = imutils.grab_contours(cv2.findContours(threshold,
 										cv2.RETR_TREE,
