@@ -5,6 +5,15 @@ import numpy as np
 import imutils
 from matplotlib import pyplot as plt
 import argparse
+def adjust_gamma(image, gamma=1.0):
+	# build a lookup table mapping the pixel values [0, 255] to
+	# their adjusted gamma values
+	invGamma = 1.0 / gamma
+	table = np.array([((i / 255.0) ** invGamma) * 255
+		for i in np.arange(0, 256)]).astype("uint8")
+ 
+	# apply gamma correction using the lookup table
+	return cv2.LUT(image, table)
 
 
 def recog(img,boolean):
@@ -12,19 +21,19 @@ def recog(img,boolean):
 
 	storeXYWH = []
 	storeCIRCLE = []
-	cornerWA = [0, 0]
-	cornerWD = [0, 0]
-	cornerSD = [0, 0]
-	cornerSA = [0, 0]
-	cornerSET = False
+	cornerWA = 0
+	cornerWD = 0
+	cornerSD = 0
+	cornerSA = 0
 	maxWH = 0
 	circleH = circleW = 1
 	A = B = C = D = 0
-	
+	#img = adjust_gamma(img,gamma=0.9)
 	detimg = np.copy(img)
 	if boolean:
 		
 		#img = cv2.equalizeHist(img)
+		
 		blur = cv2.GaussianBlur(img, (15,15), 0)
 		(ret3, threshold) = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY
 										+ cv2.THRESH_OTSU)
@@ -68,13 +77,13 @@ def recog(img,boolean):
 			else:
 				tolXYWH -= 1
 		for i in storeXYWH:
-			if i[0] < width / 4 and i[1] < height / 4:
+			if i[0] < width / 4 and i[1] < height / 4 and not cornerWA:
 				cornerWA = i
-			elif i[0] > width / 4 and i[1] < height / 4:
+			elif i[0] > width / 4 and i[1] < height / 4 and not cornerWD:
 				cornerWD = i
-			elif i[0] > width / 4 and i[1] > height / 4:
+			elif i[0] > width / 4 and i[1] > height / 4 and not cornerSD:
 				cornerSD = i
-			elif i[0] < width / 4 and i[1] > height / 4:
+			elif i[0] < width / 4 and i[1] > height / 4 and not cornerSA:
 				cornerSA = i
 			else:
 				return
@@ -147,10 +156,7 @@ def recog(img,boolean):
 					C += 1
 		else:
 			D += 1
-			(x2,y2),radius = cv2.minEnclosingCircle(cnt)
-			center = (int(x2),int(y2))
-			radius = int(radius)
-			img = cv2.circle(img,center,radius,255,3)
+
 			cv2.putText(
 				img,
 				'D',
@@ -159,4 +165,12 @@ def recog(img,boolean):
 				1,
 				0,
 				)
+	cv2.putText(
+		img,
+		"A({})B({})C({})D({})".format(A,B,C,D),
+		(20,50),
+		font,
+		1,
+		0,
+		)
 	return img,A,B,C,D

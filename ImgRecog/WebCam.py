@@ -3,41 +3,34 @@ from Module.ImgRecodModule import recog
 import cv2
 import os
 import numpy as np
+import timeit
 from matplotlib import pyplot as plt
-A=B=C=D=Ao=Bo=Co=Do=0
-confident={}
+
 
 def cls():
 	os.system('cls' if os.name=='nt' else 'clear')
-def show_webcam(mirror=False):
+def show_webcam():
 	firstrun = True
 	cam = cv2.VideoCapture(0)
+	A=B=C=D=Ao=Bo=Co=Do=0
+	confident={}
+	correction = True
+	tarstrings = ""
 	while True:
 		printit=False
-		global A
-		global B
-		global C
-		global D
-		global Ao
-		global Bo
-		global Co
-		global Do
-		global confident
 		ret_val, img = cam.read()
 		img = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY)
-		if mirror: 
-			img = cv2.flip(img, 1)
 		if firstrun: 
 			img2 = np.copy(img)
+			firstrun = False
 		if 1:
 			try:
-				(img2y,A,B,C,D) = recog(img,True)
+				(img2y,A,B,C,D) = recog(img,correction)
 			except:
 				A=B=C=D=0
 			if A and B and C and D and (A+B+C+D) < 16:
 				try:
 					img2 = np.copy(img2y)
-					#cv2.imshow('my webcam2', img2)
 				except:
 					pass
 				if Ao==A and Bo==B and Co==C and Do==D:
@@ -65,14 +58,16 @@ def show_webcam(mirror=False):
 					
 					confident = {key:val for key, val in confident.items() if val}
 					s = sorted(confident.items(), key=lambda x: x[1], reverse=True)
+					first = True
 					for k, v in s:
-						print("A({})B({})C({})D({})---Score:({})".format(*(x.strip() for x in k.split(',')), v))
+						print(strings)
 				except:
 					confident["{},{},{},{}".format(A,B,C,D)] = 0
-		
-		cv2.imshow('result', np.hstack((img,img2)))
-		if cv2.waitKey(1) == 27: 
-			break  # esc to quit
+		tarimg = cv2.resize(np.hstack((img,img2)), (0,0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+		cv2.imshow('result', tarimg)
+		key = cv2.waitKey(1)
+		if key == 27: 
+			break
 	cv2.destroyAllWindows()
 
 show_webcam()
