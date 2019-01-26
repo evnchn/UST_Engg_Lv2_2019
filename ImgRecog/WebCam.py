@@ -60,10 +60,23 @@ def show_webcam():
 					s = sorted(confident.items(), key=lambda x: x[1], reverse=True)
 					first = True
 					for k, v in s:
+
+						strings = "A({})B({})C({})D({})---Score:({})".format(*(x.strip() for x in k.split(',')), v)
+						if first:
+							tarstrings = strings
+							first = False
 						print(strings)
 				except:
 					confident["{},{},{},{}".format(A,B,C,D)] = 0
 		tarimg = cv2.resize(np.hstack((img,img2)), (0,0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
+		cv2.putText(
+		tarimg,
+		tarstrings,
+		(20,50),
+		cv2.FONT_HERSHEY_TRIPLEX,
+		0.5,
+		(255,255,255),
+		)
 		cv2.imshow('result', tarimg)
 		key = cv2.waitKey(1)
 		if key == 27: 
