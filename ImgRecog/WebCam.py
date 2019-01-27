@@ -35,9 +35,9 @@ def show_webcam():
 					pass
 				if Ao==A and Bo==B and Co==C and Do==D:
 					try: 
-						confident["{},{},{},{}".format(A,B,C,D)] += 10
+						confident["{},{},{},{}".format(A,B,C,D)] += 8
 						confident["{},{},{},{}".format(A,B,C,D)] *= 2
-						confident = {k: v / 2 for k, v in confident.items()}
+						confident = {k: int(v / 2) for k, v in confident.items()}
 					except:
 						confident["{},{},{},{}".format(A,B,C,D)] = 0
 					printit = True
@@ -69,14 +69,7 @@ def show_webcam():
 				except:
 					confident["{},{},{},{}".format(A,B,C,D)] = 0
 		tarimg = cv2.resize(np.hstack((img,img2)), (0,0), fx=0.5, fy=0.5, interpolation=cv2.INTER_LINEAR)
-		cv2.putText(
-		tarimg,
-		tarstrings,
-		(20,50),
-		cv2.FONT_HERSHEY_TRIPLEX,
-		0.5,
-		(255,255,255),
-		)
+		cv2.putText(tarimg,tarstrings,(10,25),cv2.FONT_HERSHEY_TRIPLEX,0.5,255,)
 		cv2.imshow('result', tarimg)
 		key = cv2.waitKey(1)
 		if key == 27: 

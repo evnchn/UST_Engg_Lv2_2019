@@ -4,44 +4,21 @@ import cv2
 import numpy as np
 import imutils
 from matplotlib import pyplot as plt
-import argparse
-def adjust_gamma(image, gamma=1.0):
-	# build a lookup table mapping the pixel values [0, 255] to
-	# their adjusted gamma values
-	invGamma = 1.0 / gamma
-	table = np.array([((i / 255.0) ** invGamma) * 255
-		for i in np.arange(0, 256)]).astype("uint8")
- 
-	# apply gamma correction using the lookup table
-	return cv2.LUT(image, table)
-
 
 def recog(img,boolean):
-
-
 	storeXYWH = []
 	storeCIRCLE = []
-	cornerWA = 0
-	cornerWD = 0
-	cornerSD = 0
-	cornerSA = 0
-	maxWH = 0
 	circleH = circleW = 1
-	A = B = C = D = 0
-	#img = adjust_gamma(img,gamma=0.9)
+	maxWH = cornerWA = cornerWD = cornerSD = cornerSA = A = B = C = D = 0
 	detimg = np.copy(img)
 	if boolean:
-		
-		#img = cv2.equalizeHist(img)
-		
-		blur = cv2.GaussianBlur(img, (15,15), 0)
-		(ret3, threshold) = cv2.threshold(blur, 127, 255, cv2.THRESH_BINARY
+		(ret3, threshold) = cv2.threshold(cv2.GaussianBlur(img, (15,15), 0), 127, 255, cv2.THRESH_BINARY
 										+ cv2.THRESH_OTSU)
 		contours = imutils.grab_contours(cv2.findContours(threshold,
 										cv2.RETR_TREE,
 										cv2.CHAIN_APPROX_SIMPLE))
 		(height, width) = threshold.shape
-	
+		tolXYWH = height
 		for cnt in contours:
 			approx = cv2.approxPolyDP(cnt, 0.04 * cv2.arcLength(cnt, True),
 									True)
@@ -50,17 +27,11 @@ def recog(img,boolean):
 				center = (int(x),int(y))
 				radius = int(radius)
 				img = cv2.circle(img,center,radius,255,3)
-				xywh = cv2.boundingRect(approx)
-				storeXYWH.append(xywh)
-		detimg2 = np.copy(img)
-		if len(approx) < 4:
-			return
-		tolXYWH = 0
+				storeXYWH.append(cv2.boundingRect(approx))
 		
 		for i in range(len(storeXYWH)):
 			if storeXYWH[i][0] > width * 0.4 and storeXYWH[i][0] < width * 0.6:
 				storeXYWH[i] = 0
-		tolXYWH = height
 		storeXYWH = [i for i in storeXYWH if i]
 		chg = False
 		while len(storeXYWH) > 4:
@@ -77,27 +48,24 @@ def recog(img,boolean):
 			else:
 				tolXYWH -= 1
 		for i in storeXYWH:
-			if i[0] < width / 4 and i[1] < height / 4 and not cornerWA:
+			if not cornerWA and i[0] < width / 4 and i[1] < height / 4:
 				cornerWA = i
-			elif i[0] > width / 4 and i[1] < height / 4 and not cornerWD:
+			elif not cornerWD and i[0] > width / 4 and i[1] < height / 4:
 				cornerWD = i
-			elif i[0] > width / 4 and i[1] > height / 4 and not cornerSD:
+			elif not cornerSD and i[0] > width / 4 and i[1] > height / 4:
 				cornerSD = i
-			elif i[0] < width / 4 and i[1] > height / 4 and not cornerSA:
+			elif not cornerSA and i[0] < width / 4 and i[1] > height / 4:
 				cornerSA = i
 			else:
 				return
 		
 		properw = int(width*circleH/circleW)
-		src_pts = np.array([[cornerWA[0] + cornerWA[2], cornerWA[1]
+		img = cv2.warpPerspective(detimg, cv2.getPerspectiveTransform(np.array([[cornerWA[0] + cornerWA[2], cornerWA[1]
 						+ cornerWA[3]], cornerWD[:2], cornerSD[:2],
-						cornerSA[:2]], dtype=np.float32)
-		dst_pts = np.array([[0, 0], [properw - 1, 0], [properw - 1, height - 1],
-						[0, height - 1]], dtype=np.float32)
-		img = cv2.warpPerspective(detimg, cv2.getPerspectiveTransform(src_pts,
-								dst_pts), (properw, height))
-	blur = cv2.GaussianBlur(img, (15, 15), 0)
-	(ret3, threshold) = cv2.threshold(blur, 0, 255, cv2.THRESH_BINARY
+						cornerSA[:2]], dtype=np.float32),
+								np.array([[0, 0], [properw - 1, 0], [properw - 1, height - 1],
+						[0, height - 1]], dtype=np.float32)), (properw, height))
+	(ret3, threshold) = cv2.threshold(cv2.GaussianBlur(img, (15, 15), 0), 0, 255, cv2.THRESH_BINARY
 									  + cv2.THRESH_OTSU)
 	contours = imutils.grab_contours(cv2.findContours(threshold.copy(),
 									 cv2.RETR_TREE,
