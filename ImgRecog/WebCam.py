@@ -5,13 +5,16 @@ import os
 import numpy as np
 import timeit
 from matplotlib import pyplot as plt
-
+from argparse import *
+parser = ArgumentParser()
+parser.add_argument("vcid", help="VideoCapture ID from bruteforcer")
 
 def cls():
 	os.system('cls' if os.name=='nt' else 'clear')
 def show_webcam():
+	args = parser.parse_args()
 	firstrun = True
-	cam = cv2.VideoCapture(0)
+	cam = cv2.VideoCapture(int(args.vcid))
 	A=B=C=D=Ao=Bo=Co=Do=0
 	confident={}
 	correction = True
