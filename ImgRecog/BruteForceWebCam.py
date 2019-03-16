@@ -6,7 +6,9 @@ index = 0
 arr = []
 while True:
 	cap = cv2.VideoCapture(index)
-	if cap.read()[0]:
+	if cap is None or not cap.isOpened():
+		break
+	elif cap.read()[0]:
 		arr.append(index)
 	else:
 		break
