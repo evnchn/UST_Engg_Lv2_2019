@@ -1,5 +1,5 @@
 
-from Module.ImgRecodModule import recog
+from ImgRecodModule import recog
 import cv2
 import os
 import numpy as np

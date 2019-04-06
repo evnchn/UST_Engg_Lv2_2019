@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from Module.ImgRecodModule import recog
+from ImgRecodModule import recog
 import cv2
 from matplotlib import pyplot as plt
 import argparse
